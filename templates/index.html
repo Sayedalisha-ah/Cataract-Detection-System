@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionCare AI | Cataract Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-content">
+      <header class="app-header">
+       
+        <h1>Cataract Detection</h1>
+      </header>
+
+      <section class="upload-section">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-upload"></i> Upload Retinal Image</h2>
+            <p>Please upload a clear image of the patient's retina for analysis.</p>
+            
+          </div>
+          <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" class="upload-form">
+              <div class="file-upload">
+                <label for="image-input" class="upload-label">
+                  <i class="fas fa-camera"></i>
+                  <span>Choose Image File</span>
+                  <input type="file" id="image-input" name="image" accept="image/*" required style="background-color: lightblue; color: black; padding: 10px 20px; border-radius: 5px;">
+                </label>
+              </div>
+              <div class="upload-preview" id="preview-container">
+                <div class="preview-placeholder">
+                  <i class="fas fa-image"></i>
+                  <p>Image Preview</p>
+                </div>
+              </div>
+              <button type="submit" class="btn predict-btn">
+                <i class="fas fa-search"></i> Analyze Image
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {% if prediction %}
+      <section class="results-section">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-check-circle"></i> Diagnosis Results</h2>
+          </div>
+          <div class="card-body">
+            <div class="result-container">
+              <div class="result-visual">
+                {% if filename %}
+                <div class="result-image">
+                  <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Analyzed Retina">
+                </div>
+                {% endif %}
+              </div>
+              <div class="result-details">
+                <div class="diagnosis-box {{ 'positive' if prediction == 'Cataract Detected' else 'negative' }}">
+                  <h3>Diagnosis</h3>
+                  <span class="diagnosis-text">{{ prediction }}</span>
+                </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flash-messages">
+          {% for message in messages %}
+          <div class="flash-message {{ 'error' if 'error' in message|lower else 'success' }}">
+            <i class="fas {{ 'fa-exclamation-circle' if 'error' in message|lower else 'fa-check-circle' }}"></i>
+            <span>{{ message }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+    </main>
+
+    <footer class="app-footer">
+      <p>&copy; 2025 Sayed Ahamad Alisha. All Rights Reserved. </p>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const imageInput = document.getElementById('image-input');
+      const previewContainer = document.getElementById('preview-container');
+
+      imageInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            previewContainer.innerHTML = `
+              <img src="${e.target.result}" alt="Image Preview">
+              <div class="image-info">
+                <span>${file.name}</span>
+                <span>${(file.size / 1024).toFixed(2)} KB</span>
+              </div>
+            `;
+          };
+          reader.readAsDataURL(file);
+        } else {
+          previewContainer.innerHTML = `
+            <div class="preview-placeholder">
+              <i class="fas fa-image"></i>
+              <p>Image Preview</p>
+            </div>
+          `;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
